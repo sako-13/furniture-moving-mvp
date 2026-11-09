@@ -85,8 +85,8 @@ function LengthInput({
   );
 }
 
-export default function MoveSimulator() {
-  const [unit, setUnit] = useState<Unit>("in");
+export default function MoveSimulator({ initialUnit = "in" }: { initialUnit?: Unit }) {
+  const [unit, setUnit] = useState<Unit>(initialUnit);
   const [category, setCategory] = useState(CATEGORIES[0].name);
   const [length, setLength] = useState(CATEGORIES[0].length);
   const [width, setWidth] = useState(CATEGORIES[0].width);

@@ -18,10 +18,26 @@ There's also a quick check that warns you when even the narrow side of the item 
 | Rotate | Slider or ±15° buttons | `R` / `Shift+R` |
 | Start over | **Reset** | |
 
+## Accounts (Supabase)
+Sign up, log in and log out with email + password, using Supabase Auth. Each account gets a row in `public.profiles` (name, email, preferred unit, created date), and Row Level Security means users can only read and edit their own row. The preferred unit becomes the simulator's default unit.
+
+| Route | What it does |
+| --- | --- |
+| `/signup`, `/login` | Email + password forms (Server Actions) |
+| `/account` | Edit name and default unit, log out. Signed-out visitors are redirected to `/login` |
+| `/auth/confirm` | Landing page for the email confirmation link |
+
+### Setup
+1. Create a project at [supabase.com](https://supabase.com).
+2. In **SQL Editor**, run `supabase/migrations/0001_profiles.sql`.
+3. Copy `.env.example` to `.env.local` and fill in the values from **Project Settings → API**.
+4. In **Authentication → URL Configuration**, set **Site URL** to your production URL and add `http://localhost:3000/**` and `https://<your-app>.vercel.app/**` to **Redirect URLs**.
+5. On Vercel, add the same two env vars (Production, Preview, Development) and redeploy.
+
 ## Out of scope for this MVP
 These come from the PRD and are planned for later:
 - Video recording and AI scanning of the room and route
-- Authentication (Supabase) and saved simulations
+- Saved simulations
 - Route optimization and move suggestions
 - Multiple furniture items and 3D / tilting
 
@@ -45,7 +61,12 @@ src/
   components/MoveSimulator.tsx   # Input forms, state, status, rotation controls
   components/SimulationCanvas.tsx# Konva overhead view (walls, door, draggable furniture)
   lib/geometry.ts                # Units, layout generation, collision detection
+  lib/supabase/                  # Supabase clients + session-refresh middleware
+  app/(auth)/                    # Login / sign-up pages and server actions
+  app/account/                   # Account page
+  middleware.ts                  # Refreshes the auth session on each request
+supabase/migrations/             # SQL for the profiles table, RLS and signup trigger
 ```
 
 ## Deploy
-Ready for [Vercel](https://vercel.com/new): import the repo and use the defaults.
+Ready for [Vercel](https://vercel.com/new): import the repo, add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and use the defaults.

@@ -1,6 +1,10 @@
 import MoveSimulator from "@/components/MoveSimulator";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/supabase/server";
 
-export default function Home() {
+export default async function Home() {
+  const { user, profile } = await getCurrentUser();
+  if (!user) redirect("/login");
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6">
       <header className="flex flex-col gap-1">
@@ -10,7 +14,7 @@ export default function Home() {
           room. Walls turn red wherever it would hit.
         </p>
       </header>
-      <MoveSimulator />
+      <MoveSimulator initialUnit={profile?.preferred_unit} />
     </main>
   );
 }
