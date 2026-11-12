@@ -12,7 +12,7 @@ const NOT_CONFIGURED = "Accounts aren't set up yet: Supabase environment variabl
 /** Only allow redirects to paths on this site. */
 function safeNext(value: FormDataEntryValue | null) {
   const next = typeof value === "string" ? value : "";
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  return next.startsWith("/") && !next.startsWith("//") ? next : "/simulator";
 }
 
 export async function login(_prev: AuthState, formData: FormData): Promise<AuthState> {
@@ -47,13 +47,13 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
     password,
     options: {
       data: { display_name: displayName },
-      emailRedirectTo: `${origin}/auth/confirm?next=/`,
+      emailRedirectTo: `${origin}/auth/confirm?next=/simulator`,
     },
   });
   if (error) return { error: error.message, email };
 
   // With email confirmation turned off, Supabase signs the user in right away.
-  if (data.session) redirect("/");
+  if (data.session) redirect("/simulator");
   return { message: `Check ${email} for a link to confirm your account, then log in.`, email };
 }
 

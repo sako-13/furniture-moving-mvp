@@ -1,29 +1,55 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/supabase/server";
 
+function Logo() {
+  return (
+    <Link href="/" className="flex items-center gap-2.5">
+      <span className="grid h-8 w-8 place-items-center rounded-lg bg-ink" aria-hidden>
+        <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="#fff" strokeWidth="2">
+          <path d="M3 17V8l7-5 7 5v9" />
+          <rect x="7" y="11" width="6" height="6" fill="var(--color-accent)" stroke="none" />
+        </svg>
+      </span>
+      <span className="display text-lg font-medium">Will It Fit?</span>
+    </Link>
+  );
+}
+
 export default async function SiteHeader() {
   const { user, profile } = await getCurrentUser();
+  const name = profile?.display_name || user?.email || "";
+
   return (
-    <nav className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-        <Link href="/" className="font-semibold tracking-tight">
-          Will It Fit?
-        </Link>
+    <header className="sticky top-0 z-20 border-b border-line bg-canvas/85 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+        <Logo />
         {user ? (
-          <Link href="/account" className="truncate text-sm text-slate-700 hover:text-indigo-600">
-            {profile?.display_name || user.email}
-          </Link>
+          <nav className="flex items-center gap-1 text-sm">
+            <Link href="/simulator" className="rounded-full px-3.5 py-2 text-ink hover:bg-sand">
+              Simulator
+            </Link>
+            <Link
+              href="/account"
+              className="flex items-center gap-2 rounded-full py-1 pr-3 pl-1 text-ink hover:bg-sand"
+              aria-label="Your account"
+            >
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-navy text-xs font-semibold text-white uppercase">
+                {name.charAt(0)}
+              </span>
+              <span className="hidden max-w-40 truncate sm:inline">{name}</span>
+            </Link>
+          </nav>
         ) : (
-          <div className="flex items-center gap-2 text-sm">
-            <Link href="/login" className="rounded-md px-3 py-1.5 text-slate-700 hover:bg-slate-100">
+          <nav className="flex items-center gap-1 text-sm">
+            <Link href="/login" className="rounded-full px-3.5 py-2 text-ink hover:bg-sand">
               Log in
             </Link>
-            <Link href="/signup" className="rounded-md bg-indigo-600 px-3 py-1.5 font-medium text-white hover:bg-indigo-500">
-              Sign up
+            <Link href="/signup" className="btn-primary px-4 py-2">
+              Get started
             </Link>
-          </div>
+          </nav>
         )}
       </div>
-    </nav>
+    </header>
   );
 }

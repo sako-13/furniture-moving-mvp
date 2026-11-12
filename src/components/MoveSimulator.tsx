@@ -64,9 +64,9 @@ function LengthInput({
 }) {
   const shown = Math.round(fromInches(inches, unit) * 100) / 100;
   return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="text-slate-600">{label}</span>
-      <div className="flex items-center rounded-md border border-slate-300 bg-white focus-within:ring-2 focus-within:ring-indigo-400">
+    <label className="flex flex-col gap-1.5">
+      <span className="field-label">{label}</span>
+      <div className="flex items-center rounded-xl border border-line bg-surface transition-colors focus-within:border-navy focus-within:ring-4 focus-within:ring-navy/10">
         <input
           type="number"
           inputMode="decimal"
@@ -77,11 +77,23 @@ function LengthInput({
             const v = parseFloat(e.target.value);
             onChange(Number.isFinite(v) && v >= 0 ? toInches(v, unit) : 0);
           }}
-          className="w-full min-w-0 rounded-md bg-transparent px-2 py-1.5 outline-none"
+          className="w-full min-w-0 bg-transparent px-3 py-2 tabular-nums outline-none"
         />
-        <span className="pr-2 text-xs text-slate-400">{unit}</span>
+        <span className="pr-3 font-mono text-xs text-ink-muted">{unit}</span>
       </div>
     </label>
+  );
+}
+
+function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <section className="card flex flex-col gap-4 p-5">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-[15px] font-semibold">{title}</h2>
+        {action}
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -138,31 +150,40 @@ export default function MoveSimulator({ initialUnit = "in" }: { initialUnit?: Un
   ].filter(Boolean) as string[];
 
   const status = inRoom
-    ? { tone: "bg-green-50 text-green-800 border-green-200", text: "It made it into the room with no collisions." }
+    ? { tone: "bg-success-tint text-success", dot: "bg-success", title: "It fits.", text: "Fully in the room with no collisions." }
     : hits.size > 0
-      ? { tone: "bg-red-50 text-red-800 border-red-200", text: `Collision! Touching ${hits.size} wall${hits.size > 1 ? "s" : ""}. Rotate or reposition.` }
-      : { tone: "bg-slate-50 text-slate-700 border-slate-200", text: "Clear. Drag the item through the hallway and doorway into the room." };
+      ? {
+          tone: "bg-danger-tint text-danger",
+          dot: "bg-danger",
+          title: "Collision.",
+          text: `Touching ${hits.size} wall${hits.size > 1 ? "s" : ""}. Rotate or reposition it.`,
+        }
+      : { tone: "bg-navy-tint text-navy", dot: "bg-navy", title: "All clear.", text: "Drag it through the hallway and doorway into the room." };
+
+  const rotateBtn = "grid h-9 min-w-12 place-items-center rounded-full border border-line px-3 text-sm tabular-nums hover:bg-sand";
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
       <aside className="flex flex-col gap-5">
-        <section className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Furniture</h2>
-            <div className="flex overflow-hidden rounded-md border border-slate-300 text-xs">
+        <Panel
+          title="Furniture"
+          action={
+            <div className="flex rounded-full bg-sand p-0.5 text-xs" role="group" aria-label="Units">
               {UNITS.map((u) => (
                 <button
                   key={u}
                   onClick={() => setUnit(u)}
-                  className={`px-2 py-1 ${unit === u ? "bg-indigo-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}
+                  aria-pressed={unit === u}
+                  className={`rounded-full px-3 py-1 font-medium transition-colors ${unit === u ? "bg-ink text-white" : "text-ink-muted hover:text-ink"}`}
                 >
                   {u}
                 </button>
               ))}
             </div>
-          </div>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-slate-600">Type</span>
+          }
+        >
+          <label className="flex flex-col gap-1.5">
+            <span className="field-label">Type</span>
             <select
               value={category}
               onChange={(e) => {
@@ -173,7 +194,7 @@ export default function MoveSimulator({ initialUnit = "in" }: { initialUnit?: Un
                   setWidth(c.width);
                 }
               }}
-              className="rounded-md border border-slate-300 bg-white px-2 py-1.5"
+              className="input py-2"
             >
               {CATEGORIES.map((c) => (
                 <option key={c.name}>{c.name}</option>
@@ -186,10 +207,9 @@ export default function MoveSimulator({ initialUnit = "in" }: { initialUnit?: Un
             <LengthInput label="Depth" inches={width} unit={unit} onChange={(v) => { setWidth(v); setCategory("Custom"); }} />
           </div>
           <LengthInput label="Safety buffer (each side)" inches={buffer} unit={unit} onChange={setBuffer} />
-        </section>
+        </Panel>
 
-        <section className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="font-semibold">Route</h2>
+        <Panel title="Route">
           <div className="grid grid-cols-2 gap-3">
             {SPACE_FIELDS.map((f) => (
               <LengthInput
@@ -201,20 +221,26 @@ export default function MoveSimulator({ initialUnit = "in" }: { initialUnit?: Un
               />
             ))}
           </div>
-        </section>
+        </Panel>
       </aside>
 
       <section className="flex min-w-0 flex-col gap-4">
-        <div className={`rounded-lg border px-4 py-3 text-sm font-medium ${status.tone}`}>{status.text}</div>
+        <div role="status" className={`flex items-center gap-3 rounded-2xl px-5 py-3.5 text-sm ${status.tone}`}>
+          <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${status.dot}`} aria-hidden />
+          <span>
+            <span className="font-semibold">{status.title}</span> <span className="text-ink">{status.text}</span>
+          </span>
+        </div>
 
         {blockers.length > 0 && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            Even its narrow side ({formatLength(narrowSide, unit)}) is wider than {blockers.join(" and ")}, so it
-            won&apos;t fit lying flat at any angle. You may need to tilt it on end or take it apart.
+          <div className="rounded-2xl bg-warning-tint px-5 py-3.5 text-sm text-ink">
+            <span className="font-semibold">Heads up:</span> even its narrow side ({formatLength(narrowSide, unit)}) is
+            wider than {blockers.join(" and ")}, so it won&apos;t fit lying flat at any angle. You may need to stand it
+            on end or take it apart.
           </div>
         )}
 
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+        <div className="card overflow-hidden p-3">
           <SimulationCanvas
             layout={layout}
             furniture={furniture}
@@ -227,33 +253,33 @@ export default function MoveSimulator({ initialUnit = "in" }: { initialUnit?: Un
           />
         </div>
 
-        <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
-          <span className="text-sm font-medium">Rotation</span>
+        <div className="card flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:gap-5">
+          <span className="text-[15px] font-semibold">Rotation</span>
           <input
             type="range"
             min={0}
             max={359}
             value={rotation}
             onChange={(e) => setRotation(Number(e.target.value))}
-            className="flex-1 accent-indigo-600"
+            className="flex-1 accent-navy"
             aria-label="Rotation in degrees"
           />
           <div className="flex items-center gap-2">
-            <button onClick={() => setRotation((r) => (r + 345) % 360)} className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50">
+            <button onClick={() => setRotation((r) => (r + 345) % 360)} className={rotateBtn} aria-label="Rotate 15 degrees counter-clockwise">
               −15°
             </button>
-            <span className="w-10 text-center text-sm tabular-nums">{rotation}°</span>
-            <button onClick={() => setRotation((r) => (r + 15) % 360)} className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50">
+            <span className="w-11 text-center font-mono text-sm tabular-nums">{rotation}°</span>
+            <button onClick={() => setRotation((r) => (r + 15) % 360)} className={rotateBtn} aria-label="Rotate 15 degrees clockwise">
               +15°
             </button>
-            <button onClick={resetPosition} className="rounded-md bg-slate-900 px-3 py-1.5 text-sm text-white hover:bg-slate-700">
+            <button onClick={resetPosition} className="btn-dark ml-1 px-4 py-2">
               Reset
             </button>
           </div>
         </div>
-        <p className="text-xs text-slate-500">
-          Drag the item to move it. Keyboard: arrow keys nudge (Shift for bigger steps), R / Shift+R rotates. Walls turn
-          red when the item (plus its safety buffer) overlaps them. This is a 2D overhead view, so tilting isn&apos;t modeled.
+        <p className="text-xs leading-relaxed text-ink-muted">
+          Drag to move. Keyboard: arrow keys nudge (Shift for bigger steps), R / Shift+R rotates. Walls turn red when the
+          item, plus its safety buffer, overlaps them. This is a 2D overhead view, so tilting isn&apos;t modeled.
         </p>
       </section>
     </div>

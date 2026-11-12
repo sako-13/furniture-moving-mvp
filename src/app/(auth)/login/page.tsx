@@ -11,9 +11,9 @@ export default async function LoginPage({
 }) {
   const { next, error } = await searchParams;
   return (
-    <main className="flex flex-col gap-4 px-4 py-12">
+    <main className="flex flex-col gap-4 px-4 py-16 sm:py-24">
       {error === "confirm" && (
-        <p className="mx-auto w-full max-w-sm rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+        <p className="mx-auto w-full max-w-md rounded-xl bg-warning-tint px-4 py-3 text-sm text-ink">
           That confirmation link is invalid or expired. Try logging in, or sign up again.
         </p>
       )}

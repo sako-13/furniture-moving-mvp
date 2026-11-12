@@ -2,8 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "./env";
 
-// "/" is the simulator itself; everything under /account is also signed-in only.
-const isProtected = (path: string) => path === "/" || path === "/account" || path.startsWith("/account/");
+const PROTECTED_PREFIXES = ["/simulator", "/account"];
+const isProtected = (path: string) => PROTECTED_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`));
 
 /** Refreshes the auth session cookie on every request and guards signed-in-only pages. */
 export async function updateSession(request: NextRequest) {

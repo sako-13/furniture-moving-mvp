@@ -6,17 +6,19 @@ import { formatLength, type Furniture, type Layout, type Unit } from "@/lib/geom
 
 const PAD = 16;
 
+// Mirrors the theme tokens in globals.css (Konva draws to canvas, so it can't read CSS variables).
 const COLORS = {
-  floor: "#f1f5f9",
-  room: "#e0f2fe",
-  wall: "#334155",
-  wallHit: "#dc2626",
-  door: "#22c55e",
-  furniture: "#6366f1",
-  furnitureHit: "#ef4444",
-  furnitureDone: "#16a34a",
-  buffer: "#94a3b8",
-  label: "#0f172a",
+  floor: "#f2ece3",
+  hallway: "#ffffff",
+  room: "#e8eff5",
+  wall: "#0f1b36",
+  wallHit: "#b83a2e",
+  door: "#c97b5c",
+  furniture: "#2a5e85",
+  furnitureHit: "#b83a2e",
+  furnitureDone: "#3f7d58",
+  buffer: "#5b6478",
+  label: "#5b6478",
 };
 
 interface Props {
@@ -55,9 +57,9 @@ export default function SimulationCanvas({ layout, furniture, label, hits, inRoo
       {width > 0 && (
         <Stage width={width} height={height} scaleX={scale} scaleY={scale} x={PAD - bounds.x * scale} y={PAD}>
           <Layer>
-            <Rect {...bounds} fill={COLORS.floor} />
-            <Rect {...hallway} fill="#fff" />
-            <Rect {...room} fill={COLORS.room} />
+            <Rect x={bounds.x} y={bounds.y} width={bounds.w} height={bounds.h} fill={COLORS.floor} cornerRadius={6} />
+            <Rect x={hallway.x} y={hallway.y} width={hallway.w} height={hallway.h} fill={COLORS.hallway} />
+            <Rect x={room.x} y={room.y} width={room.w} height={room.h} fill={COLORS.room} />
             <Text x={room.x + 4 / scale} y={room.y + 4 / scale} text="ROOM" fontSize={fontSize} fill={COLORS.label} />
             <Text
               x={hallway.x + 4 / scale}
@@ -87,6 +89,7 @@ export default function SimulationCanvas({ layout, furniture, label, hits, inRoo
               text={`door ${formatLength(door.w, unit)}`}
               fontSize={fontSize}
               fill={COLORS.door}
+              fontStyle="bold"
             />
 
             <Group

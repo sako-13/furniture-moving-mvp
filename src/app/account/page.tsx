@@ -18,33 +18,41 @@ export default async function AccountPage() {
   });
 
   return (
-    <main className="mx-auto flex w-full max-w-lg flex-col gap-6 px-4 py-12">
-      <section className="flex flex-col gap-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-12 sm:py-16">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-xl font-semibold">Your account</h1>
-          <p className="text-sm text-slate-600">
-            {user.email} · Member since {joined}
-          </p>
+          <h1 className="display text-4xl">Your account</h1>
+          <p className="text-ink-muted">Member since {joined}</p>
         </div>
-        {profile ? (
-          <ProfileForm displayName={profile.display_name ?? ""} preferredUnit={profile.preferred_unit} />
-        ) : (
-          <p className="text-sm text-amber-800">Your profile couldn&apos;t be loaded. Refresh to try again.</p>
-        )}
-      </section>
-      <div className="flex flex-wrap items-center gap-3">
-        <Link
-          href="/"
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-        >
+        <Link href="/simulator" className="btn-primary">
           Open the simulator
+          <span aria-hidden>→</span>
         </Link>
-        <form action={logout}>
-          <button type="submit" className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">
-            Log out
-          </button>
-        </form>
       </div>
+
+      <section className="card divide-y divide-line">
+        <div className="flex flex-col gap-1 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <span className="field-label">Email</span>
+          <span className="text-ink">{user.email}</span>
+        </div>
+        <div className="flex flex-col gap-5 p-6">
+          <div className="flex flex-col gap-1">
+            <h2 className="font-semibold">Profile</h2>
+            <p className="text-sm text-ink-muted">Your default unit is what the simulator opens in.</p>
+          </div>
+          {profile ? (
+            <ProfileForm displayName={profile.display_name ?? ""} preferredUnit={profile.preferred_unit} />
+          ) : (
+            <p className="text-sm text-danger">Your profile couldn&apos;t be loaded. Refresh to try again.</p>
+          )}
+        </div>
+      </section>
+
+      <form action={logout}>
+        <button type="submit" className="btn-outline">
+          Log out
+        </button>
+      </form>
     </main>
   );
 }
