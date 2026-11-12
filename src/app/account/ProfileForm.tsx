@@ -1,6 +1,8 @@
 "use client";
 
+import { Check, CircleAlert } from "lucide-react";
 import { useActionState } from "react";
+import { icon } from "@/components/icon";
 import { updateProfile } from "./actions";
 
 export default function ProfileForm({ displayName, preferredUnit }: { displayName: string; preferredUnit: string }) {
@@ -25,8 +27,18 @@ export default function ProfileForm({ displayName, preferredUnit }: { displayNam
         <button type="submit" disabled={pending} className="btn-dark">
           {pending ? "Saving…" : "Save changes"}
         </button>
-        {state.error && <p role="alert" className="text-sm text-danger">{state.error}</p>}
-        {state.saved && !pending && <p role="status" className="text-sm text-success">Saved</p>}
+        {state.error && (
+          <p role="alert" className="flex items-center gap-1.5 text-sm text-danger">
+            <CircleAlert {...icon} />
+            {state.error}
+          </p>
+        )}
+        {state.saved && !pending && (
+          <p role="status" className="flex items-center gap-1.5 text-sm text-success">
+            <Check {...icon} />
+            Saved
+          </p>
+        )}
       </div>
     </form>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { CircleAlert, CircleCheck, Info, RotateCcw, RotateCw, TriangleAlert } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -12,11 +13,12 @@ import {
   type SpaceDims,
   type Unit,
 } from "@/lib/geometry";
+import { icon, iconLg } from "./icon";
 
 // Konva touches `window`, so it can only render on the client.
 const SimulationCanvas = dynamic(() => import("./SimulationCanvas"), {
   ssr: false,
-  loading: () => <div className="h-64 animate-pulse rounded-lg bg-slate-100" />,
+  loading: () => <div className="skeleton aspect-[16/9] w-full" aria-label="Loading floor plan" />,
 });
 
 const CATEGORIES: { name: string; length: number; width: number }[] = [
@@ -66,7 +68,7 @@ function LengthInput({
   return (
     <label className="flex flex-col gap-1.5">
       <span className="field-label">{label}</span>
-      <div className="flex items-center rounded-xl border border-line bg-surface transition-colors focus-within:border-navy focus-within:ring-4 focus-within:ring-navy/10">
+      <div className="flex items-center rounded-md border border-line bg-surface transition-colors focus-within:border-navy focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-navy/25">
         <input
           type="number"
           inputMode="decimal"
@@ -77,9 +79,9 @@ function LengthInput({
             const v = parseFloat(e.target.value);
             onChange(Number.isFinite(v) && v >= 0 ? toInches(v, unit) : 0);
           }}
-          className="w-full min-w-0 bg-transparent px-3 py-2 tabular-nums outline-none"
+          className="measure w-full min-w-0 bg-transparent px-3 py-2 outline-none"
         />
-        <span className="pr-3 font-mono text-xs text-ink-muted">{unit}</span>
+        <span className="measure pr-3 text-xs text-ink-muted">{unit}</span>
       </div>
     </label>
   );
@@ -150,17 +152,18 @@ export default function MoveSimulator({ initialUnit = "in" }: { initialUnit?: Un
   ].filter(Boolean) as string[];
 
   const status = inRoom
-    ? { tone: "bg-success-tint text-success", dot: "bg-success", title: "It fits.", text: "Fully in the room with no collisions." }
+    ? { tone: "border-success/25 bg-success-tint", color: "text-success", Icon: CircleCheck, title: "It fits.", text: "It's fully in the room and isn't touching any wall." }
     : hits.size > 0
       ? {
-          tone: "bg-danger-tint text-danger",
-          dot: "bg-danger",
+          tone: "border-danger/25 bg-danger-tint",
+          color: "text-danger",
+          Icon: CircleAlert,
           title: "Collision.",
-          text: `Touching ${hits.size} wall${hits.size > 1 ? "s" : ""}. Rotate or reposition it.`,
+          text: `It's touching ${hits.size} wall${hits.size > 1 ? "s" : ""}. Rotate it or move it back.`,
         }
-      : { tone: "bg-navy-tint text-navy", dot: "bg-navy", title: "All clear.", text: "Drag it through the hallway and doorway into the room." };
+      : { tone: "border-navy/20 bg-navy-tint", color: "text-navy", Icon: Info, title: "Not touching any walls.", text: "Drag it along the hallway and through the door into the room." };
 
-  const rotateBtn = "grid h-9 min-w-12 place-items-center rounded-full border border-line px-3 text-sm tabular-nums hover:bg-sand";
+  const rotateBtn = "measure inline-flex h-9 items-center gap-1.5 rounded-md border border-ink/20 px-2.5 text-sm hover:border-ink/40 hover:bg-sand";
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
@@ -168,13 +171,13 @@ export default function MoveSimulator({ initialUnit = "in" }: { initialUnit?: Un
         <Panel
           title="Furniture"
           action={
-            <div className="flex rounded-full bg-sand p-0.5 text-xs" role="group" aria-label="Units">
+            <div className="flex rounded-md border border-line bg-sand p-0.5 text-xs" role="group" aria-label="Units">
               {UNITS.map((u) => (
                 <button
                   key={u}
                   onClick={() => setUnit(u)}
                   aria-pressed={unit === u}
-                  className={`rounded-full px-3 py-1 font-medium transition-colors ${unit === u ? "bg-ink text-white" : "text-ink-muted hover:text-ink"}`}
+                  className={`measure rounded-sm px-2.5 py-1 font-medium transition-colors ${unit === u ? "bg-ink text-white" : "text-ink-muted hover:text-ink"}`}
                 >
                   {u}
                 </button>
@@ -225,22 +228,25 @@ export default function MoveSimulator({ initialUnit = "in" }: { initialUnit?: Un
       </aside>
 
       <section className="flex min-w-0 flex-col gap-4">
-        <div role="status" className={`flex items-center gap-3 rounded-2xl px-5 py-3.5 text-sm ${status.tone}`}>
-          <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${status.dot}`} aria-hidden />
-          <span>
+        <div role="status" className={`flex items-center gap-3 rounded-md border px-4 py-3 text-sm ${status.tone}`}>
+          <status.Icon {...iconLg} className={`shrink-0 ${status.color}`} />
+          <span className={status.color}>
             <span className="font-semibold">{status.title}</span> <span className="text-ink">{status.text}</span>
           </span>
         </div>
 
         {blockers.length > 0 && (
-          <div className="rounded-2xl bg-warning-tint px-5 py-3.5 text-sm text-ink">
-            <span className="font-semibold">Heads up:</span> even its narrow side ({formatLength(narrowSide, unit)}) is
-            wider than {blockers.join(" and ")}, so it won&apos;t fit lying flat at any angle. You may need to stand it
-            on end or take it apart.
+          <div role="alert" className="flex gap-3 rounded-md border border-accent/30 bg-warning-tint px-4 py-3 text-sm text-ink">
+            <TriangleAlert {...iconLg} className="shrink-0 text-accent-strong" />
+            <span>
+              <span className="font-semibold">It won&apos;t fit lying flat.</span> Its narrow side is{" "}
+              <span className="measure">{formatLength(narrowSide, unit)}</span>, wider than {blockers.join(" and ")}. Try
+              standing it on end or taking it apart.
+            </span>
           </div>
         )}
 
-        <div className="card overflow-hidden p-3">
+        <div className="card overflow-hidden p-2">
           <SimulationCanvas
             layout={layout}
             furniture={furniture}
@@ -266,20 +272,23 @@ export default function MoveSimulator({ initialUnit = "in" }: { initialUnit?: Un
           />
           <div className="flex items-center gap-2">
             <button onClick={() => setRotation((r) => (r + 345) % 360)} className={rotateBtn} aria-label="Rotate 15 degrees counter-clockwise">
-              −15°
+              <RotateCcw {...icon} />
+              15°
             </button>
-            <span className="w-11 text-center font-mono text-sm tabular-nums">{rotation}°</span>
+            <output className="measure w-11 text-center text-sm" aria-label="Current rotation">{rotation}°</output>
             <button onClick={() => setRotation((r) => (r + 15) % 360)} className={rotateBtn} aria-label="Rotate 15 degrees clockwise">
-              +15°
+              <RotateCw {...icon} />
+              15°
             </button>
-            <button onClick={resetPosition} className="btn-dark ml-1 px-4 py-2">
+            <button onClick={resetPosition} className="btn-dark ml-1 px-3.5 py-2">
               Reset
             </button>
           </div>
         </div>
         <p className="text-xs leading-relaxed text-ink-muted">
-          Drag to move. Keyboard: arrow keys nudge (Shift for bigger steps), R / Shift+R rotates. Walls turn red when the
-          item, plus its safety buffer, overlaps them. This is a 2D overhead view, so tilting isn&apos;t modeled.
+          Drag the piece to move it. On a keyboard, arrow keys nudge it (hold Shift for bigger steps) and R or Shift+R
+          rotates it. A wall turns red when the piece, plus its safety buffer, overlaps it. This is an overhead 2D view,
+          so tilting isn&apos;t modeled.
         </p>
       </section>
     </div>

@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Group, Layer, Line, Rect, Stage, Text } from "react-konva";
+import { Arrow, Group, Layer, Line, Rect, Stage, Text } from "react-konva";
 import { formatLength, type Furniture, type Layout, type Unit } from "@/lib/geometry";
 
 const PAD = 16;
+// Konva draws to a canvas and can't use next/font's generated family names, so name system fonts directly.
+const MONO = "ui-monospace, SFMono-Regular, Menlo, monospace";
+const SANS = "system-ui, -apple-system, Segoe UI, sans-serif";
 
 // Mirrors the theme tokens in globals.css (Konva draws to canvas, so it can't read CSS variables).
 const COLORS = {
@@ -57,18 +60,27 @@ export default function SimulationCanvas({ layout, furniture, label, hits, inRoo
       {width > 0 && (
         <Stage width={width} height={height} scaleX={scale} scaleY={scale} x={PAD - bounds.x * scale} y={PAD}>
           <Layer>
-            <Rect x={bounds.x} y={bounds.y} width={bounds.w} height={bounds.h} fill={COLORS.floor} cornerRadius={6} />
+            <Rect x={bounds.x} y={bounds.y} width={bounds.w} height={bounds.h} fill={COLORS.floor} />
             <Rect x={hallway.x} y={hallway.y} width={hallway.w} height={hallway.h} fill={COLORS.hallway} />
             <Rect x={room.x} y={room.y} width={room.w} height={room.h} fill={COLORS.room} />
-            <Text x={room.x + 4 / scale} y={room.y + 4 / scale} text="ROOM" fontSize={fontSize} fill={COLORS.label} />
+            <Text x={room.x + 6 / scale} y={room.y + 6 / scale} text="ROOM" fontSize={fontSize} fontFamily={MONO} letterSpacing={1 / scale} fill={COLORS.label} />
             <Text
-              x={hallway.x + 4 / scale}
-              y={hallway.y + 4 / scale}
-              text={`HALLWAY · ${formatLength(hallway.h, unit)} wide`}
+              x={hallway.x + 6 / scale}
+              y={hallway.y + 6 / scale}
+              text={`HALLWAY ${formatLength(hallway.h, unit)} WIDE`}
               fontSize={fontSize}
+              fontFamily={MONO}
               fill={COLORS.label}
             />
-            <Text x={bounds.x + 4 / scale} y={hallway.y - fontSize * 1.4} text="START →" fontSize={fontSize} fill={COLORS.label} />
+            <Text x={bounds.x + 6 / scale} y={hallway.y - fontSize * 1.5} text="START" fontSize={fontSize} fontFamily={MONO} fill={COLORS.label} />
+            <Arrow
+              points={[bounds.x + 6 / scale + fontSize * 3.6, hallway.y - fontSize * 0.95, bounds.x + 6 / scale + fontSize * 6, hallway.y - fontSize * 0.95]}
+              stroke={COLORS.label}
+              fill={COLORS.label}
+              strokeWidth={1 / scale}
+              pointerLength={4 / scale}
+              pointerWidth={4 / scale}
+            />
 
             {walls.map((w) => (
               <Rect key={w.id} x={w.x} y={w.y} width={w.w} height={w.h} fill={hits.has(w.id) ? COLORS.wallHit : COLORS.wall} />
@@ -86,8 +98,9 @@ export default function SimulationCanvas({ layout, furniture, label, hits, inRoo
               width={fontSize * 8}
               align="center"
               wrap="none"
-              text={`door ${formatLength(door.w, unit)}`}
+              text={`DOOR ${formatLength(door.w, unit)}`}
               fontSize={fontSize}
+              fontFamily={MONO}
               fill={COLORS.door}
               fontStyle="bold"
             />
@@ -124,8 +137,7 @@ export default function SimulationCanvas({ layout, furniture, label, hits, inRoo
                 width={furniture.length}
                 height={furniture.width}
                 fill={fill}
-                opacity={0.85}
-                cornerRadius={2}
+                opacity={0.9}
               />
               <Text
                 x={-furniture.length / 2}
@@ -134,6 +146,7 @@ export default function SimulationCanvas({ layout, furniture, label, hits, inRoo
                 align="center"
                 text={label}
                 fontSize={fontSize}
+                fontFamily={SANS}
                 fill="#fff"
               />
             </Group>

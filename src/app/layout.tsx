@@ -22,8 +22,9 @@ const geistMono = Geist_Mono({
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Will It Fit? — Furniture Moving Simulator",
-  description: "Test whether your furniture fits through hallways and doorways before moving day.",
+  title: "Will It Fit? Furniture moving simulator",
+  description:
+    "Enter your doorway, hallway and room measurements, then drag your furniture through a to-scale floor plan to see if it fits before moving day.",
 };
 
 export default function RootLayout({

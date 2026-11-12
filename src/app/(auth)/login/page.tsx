@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { login } from "../actions";
 import AuthForm from "../AuthForm";
 
-export const metadata: Metadata = { title: "Log in — Will It Fit?" };
+export const metadata: Metadata = {
+  title: "Log in | Will It Fit?",
+  description: "Log in to the Will It Fit? furniture moving simulator.",
+};
 
 export default async function LoginPage({
   searchParams,
@@ -13,8 +16,8 @@ export default async function LoginPage({
   return (
     <main className="flex flex-col gap-4 px-4 py-16 sm:py-24">
       {error === "confirm" && (
-        <p className="mx-auto w-full max-w-md rounded-xl bg-warning-tint px-4 py-3 text-sm text-ink">
-          That confirmation link is invalid or expired. Try logging in, or sign up again.
+        <p role="alert" className="mx-auto w-full max-w-md rounded-md border border-accent/30 bg-warning-tint px-4 py-3 text-sm text-ink">
+          That confirmation link has expired or was already used. Try logging in. If that fails, sign up again.
         </p>
       )}
       <AuthForm mode="login" action={login} next={next} />

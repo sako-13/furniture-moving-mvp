@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { signup } from "../actions";
 import AuthForm from "../AuthForm";
 
-export const metadata: Metadata = { title: "Sign up — Will It Fit?" };
+export const metadata: Metadata = {
+  title: "Sign up | Will It Fit?",
+  description: "Create a free Will It Fit? account to test whether your furniture fits through your hallway and doorway.",
+};
 
 export default function SignupPage() {
   return (
